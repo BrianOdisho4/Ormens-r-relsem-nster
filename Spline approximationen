@@ -1,0 +1,45 @@
+%Helene Malki och Brian Odisho
+load('snakecoord-1.mat');
+
+N = size(xsnake, 2); % Antal punkter (6 stycken)
+noT = size(xsnake, 1); % Antal tidssteg
+
+si = linspace(0, 1, N); % Relativa positioner för punkter
+numInterp = 50; % Antal interpolationspunkter
+sInterp = linspace(0, 1, numInterp);
+
+% Skapa cell-arrayer för att lagra interpolerade data
+xe = cell(noT, 1); % x-koordinater efter spline
+ye = cell(noT, 1); % y-koordinater efter spline
+
+% Loop över alla tidpunkter och beräkna splines
+for i = 1:noT
+    % Skapa splines för x och y
+    xe{i} = spline(si, xsnake(i, :), sInterp);%sparar interpolerad data fråm xnsnake-värden 
+    ye{i} = spline(si, ysnake(i, :), sInterp);%sparar interpolerad data från ysnake-värden
+end
+
+% Animation med interpolerade data
+xmin = min(cellfun(@(x) min(x), xe)) - 0.1;
+xmax = max(cellfun(@(x) max(x), xe)) + 0.1;
+ymin = min(cellfun(@(y) min(y), ye)) - 0.1;
+ymax = max(cellfun(@(y) max(y), ye)) + 0.1;
+
+clf;
+clear MV;
+
+for i = 1:noT
+    hold off;
+    % Plotta de ursprungliga punkterna
+    plot(xsnake(i, :), ysnake(i, :), 'ko', 'MarkerFaceColor', 'k'); 
+    hold on;
+    % Plotta spline-kurvan
+    plot(xe{i}, ye{i}, 'b-');
+    axis([xmin xmax ymin ymax]);
+    axis('off');
+    title(['ormens rörelse, Tidssteg:', num2str(i)])
+    MV(i) = getframe;
+end
+
+% Spela upp filmen
+movie(MV);
