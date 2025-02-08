@@ -1,0 +1,84 @@
+%Helene Malki och Brian Odisho
+close all; clc;
+
+% Fråga a:
+A = 5; k = 3; t = 0; % Givna konstanter
+theta0 = 0;          % Initialvillkor
+N = 100;             % Antal delintervall
+ds = 1 / N;          % Steglängd
+s = linspace(0, 1, N+1); % Diskreta punkter s_i
+
+% Analytisk lösning
+theta_ana = theta0 + (A / (k * pi)) * (sin(k * pi * s + 2 * pi * t) - sin(2 * pi * t));
+
+% Numerisk lösning med trapetsregeln
+kappa = A * cos(k * pi * s + 2 * pi * t); % Beräknar kappa för alla s
+theta_num = zeros(1, N+1);                % Initiera numerisk lösning
+for i = 1:N
+    theta_num(i+1) = theta_num(i) + ds * (kappa(i) + kappa(i+1)) / 2;
+end
+
+% Plottning av lösningar
+figure;
+plot(s, theta_ana, '-r', 'LineWidth', 1.5); hold on;
+plot(s, theta_num, '--b', 'LineWidth', 1.5);
+legend('Analytisk lösning', 'Numerisk lösning');
+xlabel('s');
+ylabel('\theta(s, 0)');
+title('Jämförelse mellan analytisk och numerisk lösning för N=100 (Fråga a)');
+grid on;
+
+% Skillnad mellan lösningarna
+skillnad = theta_ana - theta_num;
+figure;
+plot(s, skillnad, '-k', 'LineWidth', 1.5);
+xlabel('s');
+ylabel('Skillnad');
+title('Skillnad mellan analytisk och numerisk lösning för N=100 (Fråga a)');
+grid on;
+
+% Fråga b:
+N_values = [50, 100, 200, 400]; % Olika värden på N
+
+rms_errors = zeros(size(N_values)); % För att lagra RMS-fel
+error_ratios = zeros(size(N_values) - [1, 0]); % För kvoter mellan successiva fel
+order_of_accuracy = zeros(size(N_values) - [1, 0]); % För noggrannhetsordning
+
+for j = 1:length(N_values)
+    N = N_values(j);
+    ds = 1 / N;
+    s = linspace(0, 1, N+1);
+    
+    % Analytisk lösning
+    theta_ana = theta0 + (A / (k * pi)) * (sin(k * pi * s + 2 * pi * t) - sin(2 * pi * t));
+    
+    % Numerisk lösning
+    kappa = A * cos(k * pi * s + 2 * pi * t);
+    theta_num = zeros(1, N+1);
+    for i = 1:N
+        theta_num(i+1) = theta_num(i) + ds * (kappa(i) + kappa(i+1)) / 2;
+    end
+    
+    % RMS-fel för detta N
+    rms_fel(j) = sqrt(sum((theta_ana - theta_num).^2) / (N+1));
+    
+    % Beräkna felkvoter och noggrannhetsordning
+    if j > 1
+        kvoter(j-1) = rms_fel(j-1) / rms_fel(j);
+        nog(j-1) = log2(kvoter(j-1));
+    end
+end
+
+% Tabell med RMS-fel, kvoter och noggrannhetsordning
+T = table(N_values', rms_fel', [0; kvoter'], [0; nog'], ...
+    'VariableNames', {'N', 'RMS_Fel', 'Kvoter', 'Noggranhetsordning'});
+disp('Tabell för fråga b:');
+disp(T);
+
+% Plottning av RMS-fel i log-log skala
+figure;
+loglog(N_values, rms_fel, '-o', 'LineWidth', 1.5);
+xlabel('N (Antal delintervall)');
+ylabel('RMS-fel');
+title('RMS-fel som funktion av N (Fråga b)');
+grid on;
