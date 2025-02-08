@@ -1,0 +1,38 @@
+%Helene Malki och Brian Odisho
+close all; clc;
+
+% Parametrar
+A = 5; % Amplitud
+k = 3; % Frekvens
+t = 0; % Tid
+theta0 = 0; % Initialvinkel
+x0 = 0; % Startpunkt för x
+y0 = 0; % Startpunkt för y
+N = 100; % Antal delintervall
+ds = 1 / N; % Steglängd
+s = (0:N)/N; % Diskreta punkter s_i
+
+% Analytisk lösning
+theta = theta0 + (A / (k * pi)) * (sin(k * pi * s + 2 * pi * t) - sin(2 * pi * t));
+
+x = zeros(1, N+1); 
+y = zeros(1, N+1);
+
+% Numerisk lösning med trapetsregeln
+for i = 1:N
+    % Trapetsregel för x
+    x(i+1) = x(i) + ds * (cos(theta(i)) + cos(theta(i+1))) / 2;
+    
+    % Trapetsregel för y
+    y(i+1) = y(i) + ds * (sin(theta(i)) + sin(theta(i+1))) / 2;
+end
+
+% Plottning av resultaten
+figure;
+plot(x, y, '-b', 'LineWidth', 1.5); % Ormens bana
+axis([-0.05 1.0 -0.05 0.15]);
+axis('image');
+xlabel('x(s, t)');
+ylabel('y(s, t)');
+title('Numerisk beräkning av ormens rörelse med trapetsregeln');
+grid on;
